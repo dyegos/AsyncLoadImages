@@ -10,6 +10,8 @@ import UIKit
 
 class PresentImageViewController: UIViewController, UIScrollViewDelegate
 {
+    @IBOutlet weak var loadIndicator: UIActivityIndicatorView!
+    
     @IBOutlet weak var myScrollView: UIScrollView!
     {
         didSet
@@ -20,7 +22,7 @@ class PresentImageViewController: UIViewController, UIScrollViewDelegate
             myScrollView.maximumZoomScale = 1.0
         }
     }
-    private var imageView: UIImageView = UIImageView()
+    lazy private var imageView: UIImageView = UIImageView()
     
     private var displayImage: UIImage?
     {
@@ -29,6 +31,12 @@ class PresentImageViewController: UIViewController, UIScrollViewDelegate
         {
             imageView.image = newValue
             imageView.sizeToFit()
+            imageView.alpha = 0.0
+            UIView.animateWithDuration(1)
+            { //[unowned self] in
+                self.imageView.alpha = 1.0
+            }
+            myScrollView?.zoomToRect(imageView.bounds, animated: true)
             myScrollView?.contentSize = imageView.frame.size
         }
     }
@@ -42,6 +50,8 @@ class PresentImageViewController: UIViewController, UIScrollViewDelegate
         }
     }
     
+    //MARK: - UIView Lifecycle
+    
     override func viewDidLoad()
     {
         super.viewDidLoad()
@@ -54,6 +64,8 @@ class PresentImageViewController: UIViewController, UIScrollViewDelegate
         if displayImage == nil { fetchImage() }
     }
     
+    //MARK: - Fetch
+    
     private func fetchImage()
     {
         if let url = imageURL
@@ -64,7 +76,10 @@ class PresentImageViewController: UIViewController, UIScrollViewDelegate
                 
                 dispatch_async(dispatch_get_main_queue())
                 {
-                    if imageData != nil { self.displayImage = UIImage(data: imageData!) }
+                    if imageData != nil
+                    {
+                        self.displayImage = UIImage(data: imageData!)
+                    }
                     else { self.displayImage = nil }
                 }
             }
